@@ -40,7 +40,7 @@ ggplot(join, aes(join_unemp_data, pct_leave)) +
 
 ```
 
-```{r}
+```{r, employment}
 
 # employment data from new table 
 
@@ -65,10 +65,11 @@ ggplot(join, aes(join_unemp_data, pct_leave)) +
 
 ```
 
-```{r}
+```{r, age}
 
 # age 
 # persons_7: 0-4, 8: 5-9, 9: 0-14, 10: 15-19, 11: 20-24, 12: 25-29, 13: 30-34, 14: 35-39, 15: 40-44....
+# confusingly stupid yes^^
 
 age <- read_excel("data/age_data.xls", skip = 11) %>% 
   clean_names() %>% 
@@ -85,12 +86,13 @@ age[i] <- lapply(age[i], as.numeric)
 age <- age %>%
   mutate_at(.funs = funs(pct = ./total), .vars = 6:22)
 
-# group data to provide an 'over 50' column thats the sum of relevant percentages
+# group data to provide an 'over 50' column thats the sum of relevant percentages. Also
+# scaled up to give an actual %
 
 age <- age %>% 
   select(area_code, ends_with("pct")) %>% 
-  mutate(over_50_pct = persons_17_pct + persons_18_pct + persons_19_pct + persons_20_pct + 
-                           persons_21_pct + persons_22_pct + persons_23_pct)
+  mutate(over_50_pct = (persons_17_pct + persons_18_pct + persons_19_pct + persons_20_pct + 
+                           persons_21_pct + persons_22_pct + persons_23_pct) * 100)
 
 # joing age data with ref_data
 

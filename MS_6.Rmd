@@ -11,25 +11,10 @@ library(tidyverse)
 library(readxl)
 library(janitor)
 
-# using janiotr on all to remove empty rows and columns from xcell sheets. also skipping to remove sheet titles etc. renamed a few columns to make life easier and allow for join. 
-
+# using janiotr on all to remove empty rows and columns from xcell sheets.
 ref_data <- read_csv("data/EU-referendum-result-data.csv") %>% 
   clean_names() %>% 
   remove_empty()
-
-age <- read_excel("data/age_data.xls", skip = 10) %>% 
-  clean_names() %>% 
-  remove_empty()
-colnames(age)[1] <- "area_code"
-
-un_emp_num <- read_excel("data/unemployment - number.xls", skip = 9) %>% 
-  clean_names() %>% 
-  remove_empty()
-
-un_emp_percent <- read_excel("data/unemployment - percentages.xls", skip = 9) %>% 
-  clean_names() %>% 
-  remove_empty()
-colnames(un_emp_percent)[7] <- "join_unemp_data"
 
 ```
 
@@ -54,4 +39,72 @@ ggplot(join, aes(join_unemp_data, pct_leave)) +
        and Brexit: Vote Leave") 
 
 ```
+
+```{r}
+
+# employment data from new table 
+
+employment <- read_excel("data/Employment_copy.xls", skip = 11) %>% 
+  clean_names() %>% 
+  remove_empty()
+
+employment_join <- ref_data %>% 
+  inner_join(employment, by = "area_code") %>% 
+  select(area_code, pct_leave, economically_active_unemployed1)
+
+ggplot(join, aes(join_unemp_data, pct_leave)) +
+  geom_point() +
+  geom_smooth(se = F) +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
+  scale_y_continuous(labels = function(y) paste0(y, "%")) +
+  labs(y = "Percentage vote leave",
+       x = "Economically active, unemployed",
+       title = "Relationship Between Regional Unemployment
+       and Vote Leave") +
+  theme_classic()
+
+```
+
+```{r}
+
+# age 
+# persons_7: 0-4, 8: 5-9, 9: 0-14, 10: 15-19, 11: 20-24, 12: 25-29, 13: 30-34, 14: 35-39, 15: 40-44....
+
+age <- read_excel("data/age_data.xls", skip = 11) %>% 
+  clean_names() %>% 
+  remove_empty()
+colnames(age)[1] <- "area_code"
+colnames(age)[5] <- "total"
+
+# this then creates new columns that give the percentage values of the total, giving plottable data
+# first making all relevant columns dbls, then creating new _pct columns using '.' / total
+
+i <- 6:22
+age[i] <- lapply(age[i], as.numeric)
+
+age <- age %>%
+  mutate_at(.funs = funs(pct = ./total), .vars = 6:22)
+
+# group data to provide an 'over 50' column thats the sum of relevant percentages
+
+age <- age %>% 
+  select(area_code, ends_with("pct")) %>% 
+  mutate(over_50_pct = persons_17_pct + persons_18_pct + persons_19_pct + persons_20_pct + 
+                           persons_21_pct + persons_22_pct + persons_23_pct)
+
+# joing age data with ref_data
+
+age_join <- ref_data %>% 
+  inner_join(age, by = "area_code") 
+
+# plot over 50 pct vs leave vote pct
+
+ggplot(age_join, aes(over_50_pct, pct_leave)) +
+  geom_point() +
+  geom_smooth()
+
+
+
+```
+
 

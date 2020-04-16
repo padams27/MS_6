@@ -18,7 +18,7 @@ ref_data <- read_csv("data/EU-referendum-result-data.csv") %>%
 
 ```
 
-```{r, first plot, warning=FALSE}
+```{r, employment but dodgey, warning=FALSE}
 
 # needed to change the unemployment data to dbl not chr in order to plot as continuous data. luckily had this problem once before so recognised it. probably unnecessary to use select, but helped make it easier to see what the table/data looked like. axis labelling as percent just like ps5.
 
@@ -44,7 +44,7 @@ ggplot(join, aes(join_unemp_data, pct_leave)) +
 
 # employment data from new table 
 
-employment <- read_excel("data/Employment_copy.xls", skip = 11) %>% 
+employment <- read_excel("data/Employment_pct.xls", skip = 11) %>% 
   clean_names() %>% 
   remove_empty()
 
@@ -109,4 +109,26 @@ ggplot(age_join, aes(over_50_pct, pct_leave)) +
 
 ```
 
+
+```{r, density}
+
+density <- read_excel("data/Population density.xls", sheet = 2, skip = 11) %>% 
+  clean_names() %>% 
+  remove_empty()
+
+density_join <- ref_data %>% 
+  inner_join(density, by = "area_code") %>% 
+  select(area_code, pct_leave, density_person_per_hectare)
+
+overal_denisty <- ggplot(density_join, aes(density_person_per_hectare, pct_leave)) +
+  geom_jitter()
+
+density_by_region <- density_join %>% 
+  mutate(region = ifelse(str_starts(area_code, "E1"), 1, 0))
+```
+
+```{r}
+
+
+```
 

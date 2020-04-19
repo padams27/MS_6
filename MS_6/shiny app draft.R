@@ -52,7 +52,20 @@ ui <- navbarPage("Analysing Brexit",
                           tabPanel("Graphics",
                                        h3("First Plot:"),
                                        plotOutput("unemployment_leave"),
-                            )),
+                                   
+                            sidebarPanel(
+                              helpText("Choose a varibale to view corellation plot"),
+                                selectInput("account_name", "NCAA Twitter Accounts:",
+                                                   choices = list("@NCAA" = "NCAA",
+                                                                  "@NCAAIceHockey" = "NCAAIceHockey",
+                                                                  "@NCAATrackField" = "NCAATrackField",
+                                                                  "@NCAALLAX" = "NCAALAX",
+                                                                  "@NCAASoccer" = "NCAASoccer"),
+                                                   selected = "")),
+                                   
+                            mainPanel(plotOutput(xxxxxx))),
+                            
+                          ))),
                  
 
                  
